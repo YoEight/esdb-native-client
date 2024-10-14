@@ -47,6 +47,8 @@ add_custom_command(
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_library(generated_files ${gen_files})
 
+file(GLOB source_files "${CMAKE_CURRENT_SOURCE_DIR}/*")
+
 target_link_libraries(generated_files
 #        absl::absl_log
 #        ${_REFLECTION}
@@ -56,9 +58,15 @@ target_link_libraries(generated_files
 #        Protobuf
 )
 
+file(GLOB_RECURSE source_files "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+
+foreach(src_file ${source_files})
+    message(STATUS ${src_file})
+endforeach ()
+
 add_library(esdb_native_client
         STATIC
-        esdb.cpp
+        ${source_files}
         ${generated_files}
 )
 
