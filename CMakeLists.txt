@@ -5,6 +5,61 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
+find_program(PROTOC_EXE protoc REQUIRED)
+find_program(GRPC_CPP_PLUGIN_EXE grpc_cpp_plugin REQUIRED)
 
-add_library(esdb_native_client STATIC esdb.cpp)
+set(PROTOS)
+set(gen_proto_sources)
+set(gen_proto_headers)
+set(gen_grpc_sources)
+set(gen_grpc_headers)
+set(protos_dir "${CMAKE_SOURCE_DIR}/protos")
+
+file(GLOB proto_files "${protos_dir}/*")
+foreach (file ${proto_files})
+    get_filename_component(name ${file} NAME_WE)
+    list(APPEND gen_proto_sources "${CMAKE_CURRENT_BINARY_DIR}/${name}.pb.cc")
+    list(APPEND gen_proto_headers "${CMAKE_CURRENT_BINARY_DIR}/${name}.pb.h")
+    list(APPEND gen_grpc_sources "${CMAKE_CURRENT_BINARY_DIR}/${name}.grpc.pb.cc")
+    list(APPEND gen_grpc_headers "${CMAKE_CURRENT_BINARY_DIR}/${name}.grpc.pb.h")
+endforeach ()
+
+set(gen_files)
+list(APPEND gen_files ${gen_proto_sources})
+list(APPEND gen_files ${gen_proto_headers})
+list(APPEND gen_files ${gen_grpc_sources})
+list(APPEND gen_files ${gen_grpc_headers})
+
+message(STATUS "Binary Dir: ${CMAKE_CURRENT_BINARY_DIR}")
+message(STATUS "Gen Files: ${gen_files}")
+message(STATUS "Proto Files: ${proto_files}")
+
+add_custom_command(
+        OUTPUT ${gen_files}
+        COMMAND ${PROTOC_EXE}
+        ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+        -I "${protos_dir}"
+        --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_EXE}"
+        ${proto_files}
+        DEPENDS ${proto_files})
+
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+add_library(generated_files ${gen_files})
+
+target_link_libraries(generated_files
+#        absl::absl_log
+#        ${_REFLECTION}
+        protobuf::libprotobuf
+        gRPC::grpc++
+#        gRPC
+#        Protobuf
+)
+
+add_library(esdb_native_client
+        STATIC
+        esdb.cpp
+        ${generated_files}
+)
+
 target_link_libraries(esdb_native_client gRPC Protobuf)
