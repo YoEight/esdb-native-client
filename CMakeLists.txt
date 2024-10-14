@@ -64,10 +64,16 @@ foreach(src_file ${source_files})
     message(STATUS ${src_file})
 endforeach ()
 
+find_package(uriparser 0.9.8 CONFIG REQUIRED char wchar_t)
+
 add_library(esdb_native_client
         STATIC
         ${source_files}
         ${generated_files}
 )
 
-target_link_libraries(esdb_native_client gRPC Protobuf)
+target_link_libraries(esdb_native_client
+        gRPC
+        Protobuf
+        uriparser::uriparser
+)
