@@ -16,7 +16,7 @@ bool tryParsePortNumber(const std::string& str, int* port) {
     }
 }
 
-bool tryParseUrl(const UriUriA& url, Settings* settings) {
+bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
     if (url.scheme.first == nullptr && url.scheme.afterLast == nullptr)
         return false;
 
@@ -54,12 +54,58 @@ bool tryParseUrl(const UriUriA& url, Settings* settings) {
 
     settings->endpoints.push_back(endpoint);
 
+    if (gossip_seed) {
+        auto current_node = url.pathHead;
+
+        do {
+            auto text = current_node->text;
+            auto parse_host = true;
+            std::string host;
+            std::string port_str;
+
+            for (auto p = text.first; p < text.afterLast; p++) {
+                if (*p == ':') {
+                    parse_host = false;
+                    continue;
+                }
+
+                parse_host ? host.push_back(*p) : port_str.push_back(*p);
+            }
+
+            auto node = Endpoint(std::move(host), 2113);
+
+            if (!port_str.empty() && !tryParsePortNumber(port_str, &node.port))
+                return false;
+
+            settings->endpoints.push_back(node);
+            current_node = current_node->next;
+        } while (current_node != nullptr);
+    }
+
+    if (url.userInfo.first != nullptr) {
+        std::string username;
+        std::string password;
+
+        auto parsing_username = true;
+        for (auto p = url.userInfo.first; p < url.userInfo.afterLast; p++) {
+            if (*p == ':') {
+                parsing_username = false;
+                continue;
+            }
+
+            parsing_username ? username.push_back(*p) : password.push_back(*p);
+        }
+
+        settings->credentials = Credentials(std::move(username), std::move(password));
+    }
+
     return true;
 }
 
 bool tryParseSettings(std::string connection_string, Settings *settings) {
     UriUriA url;
     const char * error_pos;
+    bool gossip_seed = false;
 
     if (uriParseSingleUriA(&url, connection_string.c_str(), &error_pos) != URI_SUCCESS) {
         if (connection_string.find(',') == std::string::npos)
@@ -69,9 +115,11 @@ bool tryParseSettings(std::string connection_string, Settings *settings) {
 
         if (uriParseSingleUriA(&url, connection_string.c_str(), &error_pos) != URI_SUCCESS)
             return false;
+
+        gossip_seed = true;
     }
 
-    const auto result = tryParseUrl(url, settings);
+    const auto result = tryParseUrl(url, gossip_seed, settings);
 
     uriFreeUriMembersA(&url);
 

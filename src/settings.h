@@ -16,10 +16,12 @@ enum NodePreference {
 };
 
 class Credentials {
-private:
+public:
     std::string username;
     // TODO - Do not store password in clear
     std::string password;
+
+    Credentials(std::string&& username, std::string&& password);
 };
 
 class Settings {
