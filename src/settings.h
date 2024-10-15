@@ -7,12 +7,14 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "endpoint.h"
 
 enum NodePreference {
     Leader,
     Follower,
     ReadOnlyReplica,
+    Random,
 };
 
 class Credentials {
@@ -27,12 +29,12 @@ public:
 class Settings {
 public:
     std::vector<Endpoint> endpoints;
-    std::size_t max_discovery_attempts = 10;
-    std::size_t discovery_interval_in_ms = 500;
-    std::size_t keep_alive_interval_in_ms = 10000;
-    std::size_t keep_alive_timeout_in_ms = 10000;
-    std::size_t gossip_timeout = 3000;
-    std::optional<std::size_t> default_deadline_in_ms;
+    u_int64_t max_discovery_attempts = 10;
+    u_int64_t discovery_interval_in_ms = 500;
+    u_int64_t gossip_timeout_in_ms = 3000;
+    int64_t keep_alive_interval_in_ms = 10000;
+    int64_t keep_alive_timeout_in_ms = 10000;
+    std::optional<int64_t> default_deadline_in_ms;
     bool discover_dns = false;
     bool secure = true;
     bool certificate_verification = true;

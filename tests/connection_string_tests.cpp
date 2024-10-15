@@ -8,7 +8,7 @@
 
 TEST(ConnectionStringTest, ParseConnectionString) {
     Settings settings;
-    auto parsed = tryParseSettings("esdb://admin:changeit@node1:1111,node2:2222,node3:3333?tls=true", &settings);
+    auto parsed = tryParseSettings("esdb://admin:changeit@node1:1111,node2:2222,node3:3333?tls=true&maxdiscoverattempts=524", &settings);
     EXPECT_TRUE(parsed);
 }
 

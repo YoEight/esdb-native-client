@@ -5,7 +5,7 @@
 #include <uriparser/Uri.h>
 #include "connection_string.h"
 
-bool tryParsePortNumber(const std::string& str, int* port) {
+bool tryParseInteger(const std::string& str, int* port) {
     try {
         *port = std::stoi(str);
         return true;
@@ -14,6 +14,102 @@ bool tryParsePortNumber(const std::string& str, int* port) {
     } catch (const std::out_of_range& _) {
         return false;
     }
+}
+
+bool tryParse_u_int64_t(const std::string& str, u_int64_t* port) {
+    try {
+        *port = std::stoll(str);
+        return true;
+    } catch (const std::invalid_argument& _) {
+        return false;
+    } catch (const std::out_of_range& _) {
+        return false;
+    }
+}
+
+bool tryParse_int64_t(const std::string& str, int64_t* port) {
+    try {
+        *port = std::stoll(str);
+        return true;
+    } catch (const std::invalid_argument& _) {
+        return false;
+    } catch (const std::out_of_range& _) {
+        return false;
+    }
+}
+
+bool tryParseBool(std::string& str, bool* value) {
+    if (str == "true") {
+        *value = true;
+        return true;
+    }
+
+    if (str == "false") {
+        *value = false;
+        return true;
+    }
+
+    return false;
+}
+
+bool tryHandleParam(std::string& name, std::string& value, Settings* settings) {
+    if (name == "tls") {
+        if (!tryParseBool(value, &settings->secure))
+            return false;
+    } else if (name == "tlsverifycert") {
+        if (!tryParseBool(value, &settings->certificate_verification))
+            return false;
+    } else if (name == "maxdiscoverattempts") {
+        if (!tryParse_u_int64_t(value, &settings->max_discovery_attempts))
+            return false;
+    } else if (name == "discoveryinterval") {
+        if (!tryParse_u_int64_t(value, &settings->discovery_interval_in_ms))
+            return false;
+    } else if (name == "gossiptimeout") {
+        if (!tryParse_u_int64_t(value, &settings->gossip_timeout_in_ms))
+            return false;
+    } else if (name == "keepaliveinterval") {
+        if (!tryParse_int64_t(value, &settings->keep_alive_interval_in_ms))
+            return false;
+
+        if (settings->keep_alive_interval_in_ms == -1)
+            settings->keep_alive_interval_in_ms = INT64_MAX;
+        else if (settings->keep_alive_interval_in_ms < -1)
+            return false;
+    } else if (name == "keepalivetimeout") {
+        if (!tryParse_int64_t(value, &settings->keep_alive_timeout_in_ms))
+            return false;
+
+        if (settings->keep_alive_timeout_in_ms == -1)
+            settings->keep_alive_timeout_in_ms = INT64_MAX;
+        else if (settings->keep_alive_timeout_in_ms < -1)
+            return false;
+    } else if (name == "defaultdeadline") {
+        int64_t deadline;
+        if (!tryParse_int64_t(value, &deadline))
+            return false;
+
+        if (deadline == -1)
+            settings->default_deadline_in_ms = INT64_MAX;
+        else if (deadline < -1)
+            return false;
+        else
+            settings-> default_deadline_in_ms = deadline;
+    } else if (name == "nodepreference") {
+        if (value == "leader") {
+            settings->node_preference = Leader;
+        } else if (value == "follower") {
+            settings->node_preference = Follower;
+        } else if (value == "readonlyreplica") {
+            settings->node_preference = ReadOnlyReplica;
+        } else if (value == "random") {
+            settings->node_preference = Random;
+        }
+    } else if (name == "connectionname") {
+        settings->connection_name = value;
+    }
+
+    return true;
 }
 
 bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
@@ -46,7 +142,7 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
         }
 
         int port;
-        if (!tryParsePortNumber(port_str, &port))
+        if (!tryParseInteger(port_str, &port))
             return false;
 
         endpoint.port = port;
@@ -74,7 +170,7 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
 
             auto node = Endpoint(std::move(host), 2113);
 
-            if (!port_str.empty() && !tryParsePortNumber(port_str, &node.port))
+            if (!port_str.empty() && !tryParseInteger(port_str, &node.port))
                 return false;
 
             settings->endpoints.push_back(node);
@@ -97,6 +193,36 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
         }
 
         settings->credentials = Credentials(std::move(username), std::move(password));
+    }
+
+    if (url.query.first != nullptr) {
+        std::string name;
+        std::string value;
+        bool parse_name = true;
+
+        for (auto p = url.query.first; p < url.query.afterLast; p++) {
+            if (*p == '=') {
+                parse_name = false;
+                continue;
+            }
+
+            if (*p == '&') {
+                if (!tryHandleParam(name, value, settings))
+                    return false;
+
+                parse_name = true;
+                name.clear();
+                value.clear();
+                continue;
+            }
+
+            parse_name ? name.push_back(std::tolower(*p)) : value.push_back(std::tolower(*p));
+        }
+
+        if (!name.empty()) {
+            if (!tryHandleParam(name, value, settings))
+                return false;
+        }
     }
 
     return true;
