@@ -3,6 +3,8 @@ project(esdb_native_client)
 
 set(CMAKE_CXX_STANDARD 20)
 
+option(ESDB_BUILD_TESTS "Build test suite (requires GTest)" ON)
+
 find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_program(PROTOC_EXE protoc REQUIRED)
@@ -54,8 +56,6 @@ target_link_libraries(generated_files
 #        ${_REFLECTION}
         protobuf::libprotobuf
         gRPC::grpc++
-#        gRPC
-#        Protobuf
 )
 
 file(GLOB_RECURSE source_files "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -72,8 +72,28 @@ add_library(esdb_native_client
         ${generated_files}
 )
 
+target_include_directories(esdb_native_client PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
 target_link_libraries(esdb_native_client
-        gRPC
-        Protobuf
+        gRPC::grpc++
+        protobuf::libprotobuf
         uriparser::uriparser
 )
+
+if (ESDB_BUILD_TESTS)
+    enable_testing()
+
+    find_package(GTest 1.8.0 REQUIRED)
+
+    add_executable(testrunner
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/connection_string_tests.cpp
+    )
+
+    target_link_libraries(testrunner
+            esdb_native_client
+            GTest::gtest_main
+    )
+
+    include(GoogleTest)
+    gtest_discover_tests(testrunner)
+endif ()

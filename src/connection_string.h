@@ -5,12 +5,8 @@
 #ifndef CONNECTION_STRING_H
 #define CONNECTION_STRING_H
 
+#include "settings.h"
 
-
-class connection_string {
-
-};
-
-
+bool tryParseSettings(std::string connection_string, Settings* settings);
 
 #endif //CONNECTION_STRING_H

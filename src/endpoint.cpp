@@ -5,8 +5,4 @@
 #include <string>
 #include "endpoint.h"
 
-Endpoint::Endpoint(const std::string& host, int port) : host(host), port(port) {}
-
-std::string& Endpoint::getHost() { return host; }
-
-int Endpoint::getPort() const { return port; }
+Endpoint::Endpoint(std::string&& host, int port) : host(std::move(host)), port(port) {}

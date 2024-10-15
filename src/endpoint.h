@@ -9,15 +9,11 @@
 #include <string>
 
 class Endpoint {
-private:
+public:
     std::string host;
     int port;
 
-public:
-    Endpoint(const std::string& host, int port);
-
-    std::string& getHost();
-    int getPort() const;
+    Endpoint(std::string&& host, int port);
 };
 
 
