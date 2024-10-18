@@ -14,6 +14,8 @@ public:
     int port;
 
     Endpoint(std::string&& host, int port);
+
+    bool operator==(const Endpoint& other) const;
 };
 
 

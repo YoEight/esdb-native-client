@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.29)
 project(esdb_native_client)
 
+include(FetchContent)
 set(CMAKE_CXX_STANDARD 20)
 
 option(ESDB_BUILD_TESTS "Build test suite (requires GTest)" ON)
@@ -64,6 +65,9 @@ foreach(src_file ${source_files})
     message(STATUS ${src_file})
 endforeach ()
 
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
 find_package(uriparser 0.9.8 CONFIG REQUIRED char wchar_t)
 
 add_library(esdb_native_client
@@ -78,10 +82,13 @@ target_link_libraries(esdb_native_client
         gRPC::grpc++
         protobuf::libprotobuf
         uriparser::uriparser
+        nlohmann_json::nlohmann_json
 )
 
 if (ESDB_BUILD_TESTS)
     enable_testing()
+
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/valid_connection_strings.json" "${CMAKE_CURRENT_BINARY_DIR}/valid_connection_strings.json" COPYONLY)
 
     find_package(GTest 1.8.0 REQUIRED)
 
@@ -92,6 +99,7 @@ if (ESDB_BUILD_TESTS)
     target_link_libraries(testrunner
             esdb_native_client
             GTest::gtest_main
+            nlohmann_json::nlohmann_json
     )
 
     include(GoogleTest)

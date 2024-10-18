@@ -1,0 +1,82 @@
+[
+  {
+    "connection": "esdb://localhost",
+    "expectation": {
+      "endpoints": "localhost:2113"
+    }
+  },
+
+  {
+    "connection": "esdb://bubaqp2rh41uf5akmj0g-0.mesdb.eventstore.cloud:1234",
+    "expectation": {
+      "endpoints": "bubaqp2rh41uf5akmj0g-0.mesdb.eventstore.cloud:1234"
+    }
+  },
+
+  {
+    "connection": "esdb://localhost:2114",
+    "expectation": {
+      "endpoints": "localhost:2114"
+    }
+  },
+
+  {
+    "connection": "esdb://user:pass@localhost",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "credentials": {
+        "username": "user",
+        "password": "pass"
+      }
+    }
+  },
+
+  {
+    "connection": "esdb://my%3Agreat%40username:UyeXx8%24%5EPsOo4jG88FlCauR1Coz25q@localhost",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "credentials": {
+        "username": "my:great@username",
+        "password": "UyeXx8$^PsOo4jG88FlCauR1Coz25q"
+      }
+    }
+  },
+
+  {
+    "connection": "esdb://localhost?tlsVerifyCert=false",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "tlsVerifyCert": false
+    }
+  },
+
+  {
+    "connection": "esdb://localhost?tls=false",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "tls": false
+    }
+  },
+
+  {
+    "connection": "esdb://node1,node2,node3",
+    "expectation": {
+      "endpoints": ["node1:2113", "node2:2113", "node3:2113"]
+    }
+  },
+
+  {
+    "connection": "esdb://node1:1113,node2:1114,node3:1115",
+    "expectation": {
+      "endpoints": ["node1:1113", "node2:1114", "node3:1115"]
+    }
+  },
+
+  {
+    "connection": "esdb://localhost?nodePreference=follower",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "nodePreference": "follower"
+    }
+  }
+]
