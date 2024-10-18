@@ -12,11 +12,17 @@ using json = nlohmann::json;
 
 class Expectation {
 public:
+    std::string name;
     std::string connection_string;
     Settings expected;
 
-    explicit Expectation(std::string&& connection_string) : connection_string(std::move(connection_string)) {}
+    explicit Expectation(std::string&& name, std::string&& connection_string)
+        : name(std::move(name)), connection_string(std::move(connection_string)) {}
 };
+
+void PrintTo(const Expectation& expectation, std::ostream* os) {
+    *os << expectation.connection_string;
+}
 
 Endpoint parse_endpoint(std::string&&  str) {
     const auto pos = str.find(':');
@@ -31,14 +37,19 @@ Endpoint parse_endpoint(std::string&&  str) {
     return { std::move(host), std::stoi(port_str) };
 }
 
+std::string print_settings(const ::testing::TestParamInfo<Expectation>& param) {
+    return param.param.name;
+}
+
 std::vector<Expectation> loadValidConnectionStringTests() {
     std::ifstream file("valid_connection_strings.json");
     std::vector<Expectation> expectations;
 
     json data = json::parse(file);
     for (auto test: data.get<std::vector<json>>()) {
+        auto name = test.at("name").get<std::string>();
         auto connection_string = test.at("connection").get<std::string>();
-        auto expectation = Expectation(std::move(connection_string));
+        auto expectation = Expectation(std::move(name), std::move(connection_string));
         auto params = test.at("expectation");
 
         for (const auto& param : params.items()) {
@@ -52,6 +63,32 @@ std::vector<Expectation> loadValidConnectionStringTests() {
                 } else {
                     expectation.expected.endpoints.push_back(parse_endpoint(std::move(param.value())));
                 }
+            } else if (key == "credentials") {
+                auto parts = param.value().get<json>();
+                auto username = parts.at("username").get<std::string>();
+                auto password = parts.at("password").get<std::string>();
+
+                expectation.expected.credentials = Credentials(std::move(username),std::move(password));
+            } else if (key == "tlsVerifyCert") {
+                expectation.expected.certificate_verification = param.value().get<bool>();
+            } else if (key == "tls") {
+                expectation.expected.secure = param.value().get<bool>();
+            } else if (key == "nodePreference") {
+                auto pref = param.value().get<std::string>();
+
+                if (pref == "leader") {
+                    expectation.expected.node_preference = Leader;
+                } else if (pref == "follower") {
+                    expectation.expected.node_preference = Follower;
+                } else if (pref == "readonlyreplica") {
+                    expectation.expected.node_preference = ReadOnlyReplica;
+                } else if (pref == "random") {
+                    expectation.expected.node_preference = Random;
+                } else {
+                    throw new std::invalid_argument("unknown node preference: " + pref);
+                }
+            } else {
+                throw new std::invalid_argument("unknown param: " + key);
             }
         }
 
@@ -63,25 +100,35 @@ std::vector<Expectation> loadValidConnectionStringTests() {
 
 class ValidConnectionStringTests : public ::testing::TestWithParam<Expectation> {};
 
-TEST_P(ValidConnectionStringTests, CheckValidConnectionStrings) {
+TEST_P(ValidConnectionStringTests, CheckValidConnectionString) {
     Expectation expectation = GetParam();
+
     Settings actual;
     auto parsed = tryParseSettings(expectation.connection_string, &actual);
 
-    EXPECT_TRUE(parsed);
-    EXPECT_EQ(expectation.expected, actual);
+    ASSERT_TRUE(parsed);
+    ASSERT_EQ(expectation.expected.endpoints.size(), actual.endpoints.size());
+    ASSERT_EQ(expectation.expected.endpoints, actual.endpoints);
+    ASSERT_EQ(expectation.expected.max_discovery_attempts, actual.max_discovery_attempts);
+    ASSERT_EQ(expectation.expected.discovery_interval_in_ms, actual.discovery_interval_in_ms);
+    ASSERT_EQ(expectation.expected.gossip_timeout_in_ms, actual.gossip_timeout_in_ms);
+    ASSERT_EQ(expectation.expected.keep_alive_interval_in_ms, actual.keep_alive_interval_in_ms);
+    ASSERT_EQ(expectation.expected.keep_alive_timeout_in_ms, actual.keep_alive_timeout_in_ms);
+    ASSERT_EQ(expectation.expected.default_deadline_in_ms, actual.default_deadline_in_ms);
+    ASSERT_EQ(expectation.expected.discover_dns, actual.discover_dns);
+    ASSERT_EQ(expectation.expected.secure, actual.secure);
+    ASSERT_EQ(expectation.expected.certificate_verification, actual.certificate_verification);
+    ASSERT_EQ(expectation.expected.credentials, actual.credentials);
+    ASSERT_EQ(expectation.expected.node_preference, actual.node_preference);
+    ASSERT_EQ(expectation.expected.connection_name, actual.connection_name);
+    ASSERT_EQ(expectation.expected, actual);
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    LoadFromFile,
+    LoadConnectionStringJsonFile,
     ValidConnectionStringTests,
-    ::testing::ValuesIn(loadValidConnectionStringTests()));
-
-TEST(ConnectionStringTest, ParseConnectionString) {
-    Settings settings;
-    auto parsed = tryParseSettings("esdb://admin:changeit@node1:1111,node2:2222,node3:3333?tls=true&maxdiscoverattempts=524", &settings);
-    EXPECT_TRUE(parsed);
-}
+    ::testing::ValuesIn(loadValidConnectionStringTests()),
+    print_settings);
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

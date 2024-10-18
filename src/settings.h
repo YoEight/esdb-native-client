@@ -25,9 +25,7 @@ public:
 
     Credentials(std::string&& username, std::string&& password);
 
-    bool operator==(const Credentials& other) const {
-        return username == other.username && password == other.password;
-    }
+    bool operator==(const Credentials& other) const;
 };
 
 class Settings {
@@ -46,23 +44,8 @@ public:
     NodePreference node_preference = Leader;
     std::optional<std::string> connection_name;
 
-    bool operator==(const Settings & other) const {
-        return endpoints == other.endpoints
-            && max_discovery_attempts == other.max_discovery_attempts
-            && discovery_interval_in_ms == other.discovery_interval_in_ms
-            && gossip_timeout_in_ms == other.gossip_timeout_in_ms
-            && keep_alive_interval_in_ms == other.keep_alive_interval_in_ms
-            && keep_alive_timeout_in_ms == other.keep_alive_timeout_in_ms
-            && default_deadline_in_ms == other.default_deadline_in_ms
-            && discover_dns == other.discover_dns
-            && secure == other.secure
-            && certificate_verification == other.certificate_verification
-            && credentials == other.credentials
-            && node_preference == other.node_preference
-            && connection_name == other.connection_name;
-    };
+    bool operator==(const Settings & other) const;
 };
-
 
 
 #endif //SETTINGS_H

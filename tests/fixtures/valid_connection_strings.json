@@ -1,5 +1,6 @@
 [
   {
+    "name": "simple_with_no_port",
     "connection": "esdb://localhost",
     "expectation": {
       "endpoints": "localhost:2113"
@@ -7,6 +8,7 @@
   },
 
   {
+    "name": "esdb_cloud_node_name",
     "connection": "esdb://bubaqp2rh41uf5akmj0g-0.mesdb.eventstore.cloud:1234",
     "expectation": {
       "endpoints": "bubaqp2rh41uf5akmj0g-0.mesdb.eventstore.cloud:1234"
@@ -14,6 +16,7 @@
   },
 
   {
+    "name": "simple_with_port",
     "connection": "esdb://localhost:2114",
     "expectation": {
       "endpoints": "localhost:2114"
@@ -21,6 +24,7 @@
   },
 
   {
+    "name": "with_user_credentials",
     "connection": "esdb://user:pass@localhost",
     "expectation": {
       "endpoints": "localhost:2113",
@@ -32,6 +36,7 @@
   },
 
   {
+    "name": "with_escaped_url_characters",
     "connection": "esdb://my%3Agreat%40username:UyeXx8%24%5EPsOo4jG88FlCauR1Coz25q@localhost",
     "expectation": {
       "endpoints": "localhost:2113",
@@ -43,6 +48,7 @@
   },
 
   {
+    "name": "with_tlsVerifyCert",
     "connection": "esdb://localhost?tlsVerifyCert=false",
     "expectation": {
       "endpoints": "localhost:2113",
@@ -51,6 +57,7 @@
   },
 
   {
+    "name": "with_tls",
     "connection": "esdb://localhost?tls=false",
     "expectation": {
       "endpoints": "localhost:2113",
@@ -59,6 +66,7 @@
   },
 
   {
+    "name": "with_gossip_node_seeds_with_no_port",
     "connection": "esdb://node1,node2,node3",
     "expectation": {
       "endpoints": ["node1:2113", "node2:2113", "node3:2113"]
@@ -66,6 +74,7 @@
   },
 
   {
+    "name": "with_gossip_node_seeds_with_port",
     "connection": "esdb://node1:1113,node2:1114,node3:1115",
     "expectation": {
       "endpoints": ["node1:1113", "node2:1114", "node3:1115"]
@@ -73,6 +82,7 @@
   },
 
   {
+    "name": "with_node_preference",
     "connection": "esdb://localhost?nodePreference=follower",
     "expectation": {
       "endpoints": "localhost:2113",

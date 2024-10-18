@@ -192,6 +192,10 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
             parsing_username ? username.push_back(*p) : password.push_back(*p);
         }
 
+        uriUnescapeInPlaceA(username.data());
+        uriUnescapeInPlaceA(password.data());
+        username = std::string(username.data());
+        password = std::string(password.data());
         settings->credentials = Credentials(std::move(username), std::move(password));
     }
 
@@ -233,17 +237,13 @@ bool tryParseSettings(std::string connection_string, Settings *settings) {
     const char * error_pos;
     bool gossip_seed = false;
 
-    if (uriParseSingleUriA(&url, connection_string.c_str(), &error_pos) != URI_SUCCESS) {
-        if (connection_string.find(',') == std::string::npos)
-            return false;
-
+    if (connection_string.find(',') != std::string::npos) {
         std::ranges::replace(connection_string, ',', '/');
-
-        if (uriParseSingleUriA(&url, connection_string.c_str(), &error_pos) != URI_SUCCESS)
-            return false;
-
         gossip_seed = true;
     }
+
+    if (uriParseSingleUriA(&url, connection_string.c_str(), &error_pos) != URI_SUCCESS)
+        return true;
 
     const auto result = tryParseUrl(url, gossip_seed, settings);
 
