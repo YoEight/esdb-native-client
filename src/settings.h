@@ -31,7 +31,7 @@ public:
 class Settings {
 public:
     std::vector<Endpoint> endpoints;
-    u_int64_t max_discovery_attempts = 10;
+    u_int64_t max_discover_attempts = 10;
     u_int64_t discovery_interval_in_ms = 500;
     u_int64_t gossip_timeout_in_ms = 3000;
     int64_t keep_alive_interval_in_ms = 10000;
@@ -43,6 +43,9 @@ public:
     std::optional<Credentials> credentials;
     NodePreference node_preference = Leader;
     std::optional<std::string> connection_name;
+    std::optional<std::string> tls_ca_file;
+    std::optional<std::string> user_cert_file;
+    std::optional<std::string> user_key_file;
 
     bool operator==(const Settings & other) const;
 };

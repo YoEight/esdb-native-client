@@ -41,7 +41,7 @@ std::string print_settings(const ::testing::TestParamInfo<Expectation>& param) {
     return param.param.name;
 }
 
-std::vector<Expectation> loadValidConnectionStringTests() {
+std::vector<Expectation> load_valid_connection_string_tests() {
     std::ifstream file("valid_connection_strings.json");
     std::vector<Expectation> expectations;
 
@@ -73,6 +73,22 @@ std::vector<Expectation> loadValidConnectionStringTests() {
                 expectation.expected.certificate_verification = param.value().get<bool>();
             } else if (key == "tls") {
                 expectation.expected.secure = param.value().get<bool>();
+            } else if (key == "maxDiscoverAttempts") {
+                expectation.expected.max_discover_attempts = param.value().get<int>();
+            } else if (key == "discoveryInterval") {
+                expectation.expected.discovery_interval_in_ms = param.value().get<int>();
+            } else if (key == "gossipTimeout") {
+                expectation.expected.gossip_timeout_in_ms = param.value().get<int>();
+            } else if (key == "keepAliveTimeout") {
+                expectation.expected.keep_alive_timeout_in_ms = param.value().get<int>();
+            } else if (key == "keepAliveInterval") {
+                expectation.expected.keep_alive_interval_in_ms = param.value().get<int>();
+            } else if (key == "tlsCaFile") {
+                expectation.expected.tls_ca_file = param.value().get<std::string>();
+            } else if (key == "userCertFile") {
+                expectation.expected.user_cert_file = param.value().get<std::string>();
+            } else if (key == "userKeyFile") {
+                expectation.expected.user_key_file = param.value().get<std::string>();
             } else if (key == "nodePreference") {
                 auto pref = param.value().get<std::string>();
 
@@ -104,12 +120,12 @@ TEST_P(ValidConnectionStringTests, CheckValidConnectionString) {
     Expectation expectation = GetParam();
 
     Settings actual;
-    auto parsed = tryParseSettings(expectation.connection_string, &actual);
+    auto parsed = try_parse_settings(expectation.connection_string, &actual);
 
     ASSERT_TRUE(parsed);
     ASSERT_EQ(expectation.expected.endpoints.size(), actual.endpoints.size());
     ASSERT_EQ(expectation.expected.endpoints, actual.endpoints);
-    ASSERT_EQ(expectation.expected.max_discovery_attempts, actual.max_discovery_attempts);
+    ASSERT_EQ(expectation.expected.max_discover_attempts, actual.max_discover_attempts);
     ASSERT_EQ(expectation.expected.discovery_interval_in_ms, actual.discovery_interval_in_ms);
     ASSERT_EQ(expectation.expected.gossip_timeout_in_ms, actual.gossip_timeout_in_ms);
     ASSERT_EQ(expectation.expected.keep_alive_interval_in_ms, actual.keep_alive_interval_in_ms);
@@ -127,7 +143,7 @@ TEST_P(ValidConnectionStringTests, CheckValidConnectionString) {
 INSTANTIATE_TEST_SUITE_P(
     LoadConnectionStringJsonFile,
     ValidConnectionStringTests,
-    ::testing::ValuesIn(loadValidConnectionStringTests()),
+    ::testing::ValuesIn(load_valid_connection_string_tests()),
     print_settings);
 
 int main(int argc, char **argv) {

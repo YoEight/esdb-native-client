@@ -88,5 +88,77 @@
       "endpoints": "localhost:2113",
       "nodePreference": "follower"
     }
+  },
+
+  {
+    "name": "with_max_discover_attempts",
+    "connection": "esdb://localhost?maxDiscoverAttempts=142",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "maxDiscoverAttempts": 142
+    }
+  },
+
+  {
+    "name": "with_max_discovery_interval",
+    "connection": "esdb://localhost?discoveryInterval=142",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "discoveryInterval": 142
+    }
+  },
+
+  {
+    "name": "with_gossip_timeout",
+    "connection": "esdb://localhost?gossipTimeout=142",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "gossipTimeout": 142
+    }
+  },
+
+  {
+    "name": "with_keep_alive_timeout",
+    "connection": "esdb://localhost?keepAliveTimeout=142",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "keepAliveTimeout": 142
+    }
+  },
+
+  {
+    "name": "with_keep_alive_interval",
+    "connection": "esdb://localhost?keepAliveInterval=142",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "keepAliveInterval": 142
+    }
+  },
+
+  {
+    "name": "with_tls_ca_file",
+    "connection": "esdb://localhost?tlsCaFile=/path/to/ca",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "tlsCaFile": "/path/to/ca"
+    }
+  },
+
+  {
+    "name": "with_user_cert_file",
+    "connection": "esdb://localhost?userCertFile=/path/to/ca",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "userCertFile": "/path/to/ca"
+    }
+  },
+
+  {
+    "name": "with_user_key_file",
+    "connection": "esdb://localhost?userKeyFile=/path/to/ca",
+    "expectation": {
+      "endpoints": "localhost:2113",
+      "userKeyFile": "/path/to/ca"
+    }
   }
 ]

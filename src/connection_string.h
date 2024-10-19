@@ -7,6 +7,6 @@
 
 #include "settings.h"
 
-bool tryParseSettings(std::string connection_string, Settings* settings);
+bool try_parse_settings(std::string connection_string, Settings* settings);
 
 #endif //CONNECTION_STRING_H

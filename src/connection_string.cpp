@@ -5,7 +5,7 @@
 #include <uriparser/Uri.h>
 #include "connection_string.h"
 
-bool tryParseInteger(const std::string& str, int* port) {
+bool try_parse_integer(const std::string& str, int* port) {
     try {
         *port = std::stoi(str);
         return true;
@@ -16,7 +16,7 @@ bool tryParseInteger(const std::string& str, int* port) {
     }
 }
 
-bool tryParse_u_int64_t(const std::string& str, u_int64_t* port) {
+bool try_parse_u_int64_t(const std::string& str, u_int64_t* port) {
     try {
         *port = std::stoll(str);
         return true;
@@ -27,7 +27,7 @@ bool tryParse_u_int64_t(const std::string& str, u_int64_t* port) {
     }
 }
 
-bool tryParse_int64_t(const std::string& str, int64_t* port) {
+bool try_parse_int64_t(const std::string& str, int64_t* port) {
     try {
         *port = std::stoll(str);
         return true;
@@ -38,7 +38,7 @@ bool tryParse_int64_t(const std::string& str, int64_t* port) {
     }
 }
 
-bool tryParseBool(std::string& str, bool* value) {
+bool try_parse_bool(std::string& str, bool* value) {
     if (str == "true") {
         *value = true;
         return true;
@@ -52,24 +52,24 @@ bool tryParseBool(std::string& str, bool* value) {
     return false;
 }
 
-bool tryHandleParam(std::string& name, std::string& value, Settings* settings) {
+bool try_handle_param(std::string& name, std::string& value, Settings* settings) {
     if (name == "tls") {
-        if (!tryParseBool(value, &settings->secure))
+        if (!try_parse_bool(value, &settings->secure))
             return false;
     } else if (name == "tlsverifycert") {
-        if (!tryParseBool(value, &settings->certificate_verification))
+        if (!try_parse_bool(value, &settings->certificate_verification))
             return false;
     } else if (name == "maxdiscoverattempts") {
-        if (!tryParse_u_int64_t(value, &settings->max_discovery_attempts))
+        if (!try_parse_u_int64_t(value, &settings->max_discover_attempts))
             return false;
     } else if (name == "discoveryinterval") {
-        if (!tryParse_u_int64_t(value, &settings->discovery_interval_in_ms))
+        if (!try_parse_u_int64_t(value, &settings->discovery_interval_in_ms))
             return false;
     } else if (name == "gossiptimeout") {
-        if (!tryParse_u_int64_t(value, &settings->gossip_timeout_in_ms))
+        if (!try_parse_u_int64_t(value, &settings->gossip_timeout_in_ms))
             return false;
     } else if (name == "keepaliveinterval") {
-        if (!tryParse_int64_t(value, &settings->keep_alive_interval_in_ms))
+        if (!try_parse_int64_t(value, &settings->keep_alive_interval_in_ms))
             return false;
 
         if (settings->keep_alive_interval_in_ms == -1)
@@ -77,7 +77,7 @@ bool tryHandleParam(std::string& name, std::string& value, Settings* settings) {
         else if (settings->keep_alive_interval_in_ms < -1)
             return false;
     } else if (name == "keepalivetimeout") {
-        if (!tryParse_int64_t(value, &settings->keep_alive_timeout_in_ms))
+        if (!try_parse_int64_t(value, &settings->keep_alive_timeout_in_ms))
             return false;
 
         if (settings->keep_alive_timeout_in_ms == -1)
@@ -86,7 +86,7 @@ bool tryHandleParam(std::string& name, std::string& value, Settings* settings) {
             return false;
     } else if (name == "defaultdeadline") {
         int64_t deadline;
-        if (!tryParse_int64_t(value, &deadline))
+        if (!try_parse_int64_t(value, &deadline))
             return false;
 
         if (deadline == -1)
@@ -112,7 +112,7 @@ bool tryHandleParam(std::string& name, std::string& value, Settings* settings) {
     return true;
 }
 
-bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
+bool try_parse_url(const UriUriA& url, bool gossip_seed, Settings* settings) {
     if (url.scheme.first == nullptr && url.scheme.afterLast == nullptr)
         return false;
 
@@ -142,7 +142,7 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
         }
 
         int port;
-        if (!tryParseInteger(port_str, &port))
+        if (!try_parse_integer(port_str, &port))
             return false;
 
         endpoint.port = port;
@@ -170,7 +170,7 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
 
             auto node = Endpoint(std::move(host), 2113);
 
-            if (!port_str.empty() && !tryParseInteger(port_str, &node.port))
+            if (!port_str.empty() && !try_parse_integer(port_str, &node.port))
                 return false;
 
             settings->endpoints.push_back(node);
@@ -211,7 +211,7 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
             }
 
             if (*p == '&') {
-                if (!tryHandleParam(name, value, settings))
+                if (!try_handle_param(name, value, settings))
                     return false;
 
                 parse_name = true;
@@ -224,7 +224,7 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
         }
 
         if (!name.empty()) {
-            if (!tryHandleParam(name, value, settings))
+            if (!try_handle_param(name, value, settings))
                 return false;
         }
     }
@@ -232,7 +232,7 @@ bool tryParseUrl(const UriUriA& url, bool gossip_seed, Settings* settings) {
     return true;
 }
 
-bool tryParseSettings(std::string connection_string, Settings *settings) {
+bool try_parse_settings(std::string connection_string, Settings *settings) {
     UriUriA url;
     const char * error_pos;
     bool gossip_seed = false;
@@ -245,7 +245,7 @@ bool tryParseSettings(std::string connection_string, Settings *settings) {
     if (uriParseSingleUriA(&url, connection_string.c_str(), &error_pos) != URI_SUCCESS)
         return true;
 
-    const auto result = tryParseUrl(url, gossip_seed, settings);
+    const auto result = try_parse_url(url, gossip_seed, settings);
 
     uriFreeUriMembersA(&url);
 

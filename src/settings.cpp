@@ -14,7 +14,7 @@ bool Credentials::operator==(const Credentials &other) const {
 
 bool Settings::operator==(const Settings &other) const {
     return endpoints == other.endpoints
-           && max_discovery_attempts == other.max_discovery_attempts
+           && max_discover_attempts == other.max_discover_attempts
            && discovery_interval_in_ms == other.discovery_interval_in_ms
            && gossip_timeout_in_ms == other.gossip_timeout_in_ms
            && keep_alive_interval_in_ms == other.keep_alive_interval_in_ms
