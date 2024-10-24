@@ -97,10 +97,6 @@ const std::optional<u_int64_t> &ResolvedEvent::get_position() const {
     return position;
 }
 
-
-
-
-
-
-
-
+const RecordedEvent &ResolvedEvent::get_original_event() const {
+    return link.has_value() ? link.value() : event.value();
+}

@@ -88,6 +88,24 @@ public:
     const std::optional<RecordedEvent>& get_link() const;
     const std::optional<RecordedEvent>& get_event() const;
     const std::optional<u_int64_t>& get_position() const;
+
+    const RecordedEvent& get_original_event() const;
+};
+
+class StreamDeleted {};
+class StreamNotFound {};
+class StreamMetadata {};
+
+class StreamMetadataResult {
+    std::variant<StreamDeleted, StreamNotFound, StreamMetadata> inner;
+    explicit StreamMetadataResult(StreamDeleted);
+    explicit StreamMetadataResult(StreamNotFound);
+    explicit StreamMetadataResult(StreamMetadata);
+
+public:
+    bool is_stream_deleted() const;
+    bool is_stream_not_found() const;
+    bool try_get(std::unique_ptr<StreamMetadata> &metadata);
 };
 
 
