@@ -85,6 +85,19 @@ bool RecordedEvent::is_json() const {
     return json;
 }
 
+const std::optional<RecordedEvent> &ResolvedEvent::get_event() const {
+    return event;
+}
+
+const std::optional<RecordedEvent> &ResolvedEvent::get_link() const {
+    return link;
+}
+
+const std::optional<u_int64_t> &ResolvedEvent::get_position() const {
+    return position;
+}
+
+
 
 
 

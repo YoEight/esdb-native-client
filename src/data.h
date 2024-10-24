@@ -57,7 +57,6 @@ public:
 };
 
 class RecordedEvent {
-private:
     std::string stream_id;
     uuid id;
     u_int64_t revision = 0;
@@ -79,6 +78,16 @@ public:
     const std::unordered_map<std::string, std::string>& get_metadata() const;
     u_int64_t get_position() const;
     long get_timestamp() const;
+};
+
+class ResolvedEvent {
+    std::optional<RecordedEvent> link;
+    std::optional<RecordedEvent> event;
+    std::optional<u_int64_t> position;
+public:
+    const std::optional<RecordedEvent>& get_link() const;
+    const std::optional<RecordedEvent>& get_event() const;
+    const std::optional<u_int64_t>& get_position() const;
 };
 
 
