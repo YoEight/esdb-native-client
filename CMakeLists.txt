@@ -8,6 +8,8 @@ option(ESDB_BUILD_TESTS "Build test suite (requires GTest)" ON)
 
 find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
+find_package(Boost 1.86 REQUIRED)
+#find_package(Boost 1.86 REQUIRED COMPONENTS json)
 find_program(PROTOC_EXE protoc REQUIRED)
 find_program(GRPC_CPP_PLUGIN_EXE grpc_cpp_plugin REQUIRED)
 
@@ -47,7 +49,7 @@ add_custom_command(
         ${proto_files}
         DEPENDS ${proto_files})
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${Boost_INCLUDE_DIRS}")
 add_library(generated_files ${gen_files})
 
 file(GLOB source_files "${CMAKE_CURRENT_SOURCE_DIR}/*")
@@ -57,6 +59,7 @@ target_link_libraries(generated_files
 #        ${_REFLECTION}
         protobuf::libprotobuf
         gRPC::grpc++
+        ${Boost_LIBRARIES}
 )
 
 file(GLOB_RECURSE source_files "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")

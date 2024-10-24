@@ -5,7 +5,11 @@
 #ifndef DATA_H
 #define DATA_H
 
+#include <string>
 #include <variant>
+#include <boost/uuid/uuid.hpp>
+
+using uuid = boost::uuids::uuid;
 
 class ExpectedAny {};
 class ExpectedNoStream {};
@@ -27,6 +31,55 @@ public:
     bool operator==(const ExpectedRevision &) const;
 };
 
+class StreamStart{};
+class StreamEnd{};
+
+class StreamPosition {
+    std::variant<StreamStart, StreamEnd, u_int64_t> inner;
+
+    explicit StreamPosition(StreamStart);
+    explicit StreamPosition(StreamEnd);
+public:
+    explicit StreamPosition(u_int64_t);
+
+    bool operator==(const StreamPosition &) const;
+};
+
+enum Direction {
+    Forwards,
+    Backwards,
+};
+
+class WriteResult {
+public:
+    u_int64_t next_stream_position;
+    u_int64_t position;
+};
+
+class RecordedEvent {
+private:
+    std::string stream_id;
+    uuid id;
+    u_int64_t revision = 0;
+    std::string type;
+    std::string data;
+    std::unordered_map<std::string, std::string> metadata;
+    std::string custom_metadata;
+    bool json = false;
+    u_int64_t position = 0;
+    long timestamp = 0;
+
+public:
+    const std::string& get_stream_id() const;
+    const uuid& get_id() const;
+    u_int64_t get_revision() const;
+    const std::string& get_type() const;
+    const std::string& get_data() const;
+    bool is_json() const;
+    const std::unordered_map<std::string, std::string>& get_metadata() const;
+    u_int64_t get_position() const;
+    long get_timestamp() const;
+};
 
 
 #endif //DATA_H
